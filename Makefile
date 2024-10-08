@@ -1,7 +1,7 @@
 
 # VARIABLES
 CC=gcc
-CFLAGS=-g -std=c11 -Wall -Wshadow -Wvla -Werror -pedantic
+CFLAGS=-g -std=c11 -Wall -Wshadow -Wvla -Werror -pedantic -lm
 HW_NUMBER=05
 HW_NAME=hw$(HW_NUMBER)
 FILE_NAME=$(HW_NAME).c
@@ -9,7 +9,7 @@ HEADER_FILE=$(HW_NAME).h
 TEXT_FILE=$(HW_NAME)_results.txt
 INPUT_FILE=$(HW_NAME)_input.txt
 SOURCE_FILES=$(FILE_NAME) 
-EXECUTABLE=a4
+EXECUTABLE=a5
 EXECUTABLE_GCOV=$(EXECUTABLE)_gcov
 ALL_EXECUTABLES=-o $(EXECUTABLE) $(SOURCE_FILES) $(CFLAGS)
 VAL = valgrind --tool=memcheck --log-file=memcheck.txt --leak-check=full --verbose
