@@ -72,6 +72,10 @@ List* splitList(List* root)
     List* fast = root;
     List* slow = root;
 
+    if (root == NULL || root->next == NULL) {
+    return root;
+    }
+
     while(fast != NULL && fast->next != NULL)
     {
         fast = fast->next->next;
@@ -117,7 +121,7 @@ List* mergeList(List* first, List* second)
         }
         else
         {
-            first->copy += 1;
+            first->copy += second->copy;
             first->next = mergeList(first, second->next);
             return first;
         }
@@ -195,43 +199,80 @@ void inOrderTraversal(Node* root) {
     inOrderTraversal(root->right);
 }
 
+// int bstSearch(Node* root, int x, int y, int radius)
+// {
+
+//     if(root == NULL) return 0;
+//     int dist = 0; 
+ 
+//     if(((root->x == x) && (yChecker(root,x, y,radius))) || (((root->x <= radius+x ) && (root->x >= x - radius)) && (yChecker(root,x, y,radius))))
+//     {
+//         dist += root->copy;
+//         dist+= bstSearch(root->left, x, y, radius);
+//         dist+= bstSearch(root->right, x, y, radius);
+//         return dist;
+//     }
+
+//     else if(root->x > radius+x)
+//     {
+//         dist += bstSearch(root->left, x, y, radius);
+//         return dist;
+//     } 
+       
+//     else if(root->x < x - radius)
+//     {
+//         dist += bstSearch(root->right, x, y, radius);
+//         return dist;
+//     }
+
+//     else 
+//     {
+//         dist += bstSearch(root->left, x, y, radius);
+//         dist += bstSearch(root->right, x, y, radius);
+
+//         return dist;
+//     }
+
+// return dist;
+    
+// }
+
 int bstSearch(Node* root, int x, int y, int radius)
 {
+    if (root == NULL) return 0;
 
-    if(root == NULL) return 0;
-    int dist = 0; 
- 
-    if(((root->x == x) && (yChecker(root,x, y,radius))) || (((root->x <= radius+x ) && (root->x >= x - radius)) && (yChecker(root,x, y,radius))))
+    int dist = 0;
+
+    // Calculate the squared distance to avoid sqrt calls
+    int dx = root->x - x;
+    int dy = root->y - y;
+    int distSquared = dx * dx + dy * dy;
+    int radiusSquared = radius * radius;
+
+    // Check if the current node is within the circle
+    if (distSquared <= radiusSquared)
     {
-        dist += root->copy;
-        dist+= bstSearch(root->left, x, y, radius);
-        dist+= bstSearch(root->right, x, y, radius);
-        return dist;
+        dist += root->copy; // Add the count if within the circle
     }
 
-    else if(root->x > radius+x)
-    {
-        dist += bstSearch(root->left, x, y, radius);
-        return dist;
-    } 
-       
-    else if(root->x < x - radius)
-    {
-        dist += bstSearch(root->right, x, y, radius);
-        return dist;
-    }
-
-    else 
+    // If the current node's x-coordinate is within x ± radius, check both sides
+    if (root->x >= x - radius && root->x <= x + radius)
     {
         dist += bstSearch(root->left, x, y, radius);
         dist += bstSearch(root->right, x, y, radius);
-
-        return dist;
+    }
+    else if (root->x < x - radius) // Only search the right subtree
+    {
+        dist += bstSearch(root->right, x, y, radius);
+    }
+    else if (root->x > x + radius) // Only search the left subtree
+    {
+        dist += bstSearch(root->left, x, y, radius);
     }
 
-return dist;
-    
+    return dist;
 }
+
 
 
 bool yChecker(Node* root, int r_x, int r_y, int radius)
