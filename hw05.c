@@ -53,19 +53,10 @@ List* createLinkNode(int x, int y)
     return(new_node);
 }
 
-List* linkInsertion(List* root, int x, int y)
-{
-    if(root == NULL)
-    {
-        root = createLinkNode(x, y);
-        return(root);
-    }
-
-    List* cur = root;
-    while(cur->next != NULL) cur = cur->next;
-
-    cur->next = linkInsertion(cur->next,x, y);
-    return(root);
+List* linkInsertion(List* head, int x, int y) {
+    List* newNode = createLinkqNode(x,y);
+    newNode->next = head; // Point the new node to the current head
+    return newNode; // New node is now the head of the list
 }
 
 void printList(List* head) {
