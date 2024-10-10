@@ -32,6 +32,8 @@ Node* createBstNode(int ,int, int);   // Create a new BST node
 void inOrderTraversal(Node*);             // Perform in-order traversal of the BST
 int bstSearch(Node*, int, int, int);
 bool yChecker(Node*, int,int, int);
+void deallocate(Node*);
+
 
 
 // Node* insert_node(Node*, int);
