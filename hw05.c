@@ -54,7 +54,7 @@ List* createLinkNode(int x, int y)
 }
 
 List* linkInsertion(List* head, int x, int y) {
-    List* newNode = createLinkqNode(x,y);
+    List* newNode = createLinkNode(x,y);
     newNode->next = head; // Point the new node to the current head
     return newNode; // New node is now the head of the list
 }
