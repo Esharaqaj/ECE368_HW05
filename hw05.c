@@ -1,295 +1,155 @@
 #include "hw05.h"
 
-int main(int argc, char *argv[])
-{
-        // Check if a file is provided as an argument
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-
-    // Open the file passed as an argument
-    FILE *file = fopen(argv[1], "r");
-    if (file == NULL) {
-        perror("Error opening file");
-        return EXIT_FAILURE;
-    }
-
-    int r_x, r_y, r_radi;
-    int x, y;
-    Node* bst_root = NULL;
-    List* l_root = NULL;
-
-    while(fscanf(file,"%d %d", &x, &y) == 2)
-    {
-        l_root = linkInsertion(l_root, x, y);
-    }
-    // printList(l_root);
-
-    l_root = MergeSort(l_root);
-    //printList(l_root);
-
-    bst_root = listToBst(l_root);
-    // inOrderTraversal(bst_root);
-
-    while(scanf("%d %d %d", &r_x, &r_y, &r_radi) == 3)
-    {
-        int dist = bstSearch(bst_root, r_x, r_y, r_radi);
-        printf("%d\n", dist);
-    }
-
-    deallocate(bst_root);
-    fclose(file);
-    return EXIT_SUCCESS;
+// Helper function to construct a new node
+TNode *constructNode(Point point){
+    TNode *node = malloc(sizeof(TNode));
+    node->point = point;
+    node->left = NULL;
+    node->right = NULL;
+    node->height = 1;
+    return node;
 }
 
-List* createLinkNode(int x, int y)
-{
-    List* new_node = malloc(sizeof(List));
-    new_node->x = x;
-    new_node->y = y;
-    new_node->copy = 1;
-    new_node->next = NULL;
-    return(new_node);
+int height(TNode* node) {
+    if (node == NULL)
+        return 0;
+    return node->height;
 }
 
-List* linkInsertion(List* head, int x, int y) {
-    List* newNode = createLinkNode(x,y);
-    newNode->next = head; // Point the new node to the current head
-    return newNode; // New node is now the head of the list
+int getBalance(TNode* node) {
+    if (node == NULL) return 0;
+    return height(node->left) - height(node->right);
 }
 
-void printList(List* head) {
-    List* current = head; // Start from the head of the list
-    while (current != NULL) { // Traverse until the end of the list
-        printf("x: %d, y: %d\n", current->x, current->y);
-        current = current->next; // Move to the next node
-    }
+int max(int a, int b) {
+    return (a > b) ? a : b;
 }
 
-List* splitList(List* root)
-{
-    List* fast = root;
-    List* slow = root;
+// Right rotation
+TNode* rotateRight(TNode* oldRoot) {
+    TNode* newRoot = oldRoot->left;
+    TNode* temp = newRoot->right;
+    newRoot->right = oldRoot;
+    oldRoot->left = temp;
 
-    if (root == NULL || root->next == NULL) {
-    return root;
-    }
+    // Update heights
+    oldRoot->height = max(height(oldRoot->left), height(oldRoot->right)) + 1;
+    newRoot->height = max(height(newRoot->left), height(newRoot->right)) + 1;
 
-    while(fast != NULL && fast->next != NULL)
-    {
-        fast = fast->next->next;
-        if(fast != NULL)
-        {
-            slow = slow->next;
-        }
-    }
-
-    List* temp = slow->next;
-    slow->next = NULL;
-    return (temp);
-
+    return newRoot;
 }
 
-List* mergeList(List* first, List* second)
-{
-    if(first == NULL) return second;
-    if(second == NULL) return first;
+// Left rotation
+TNode* rotateLeft(TNode* oldRoot) {
+    TNode* newRoot = oldRoot->right;
+    TNode* temp = newRoot->left;
+    newRoot->left = oldRoot;
+    oldRoot->right = temp;
 
-    if(first->x < second->x)
-    {
-        first->next = mergeList(first->next,second);
-        return first;
+    // Update heights
+    oldRoot->height = max(height(oldRoot->left), height(oldRoot->right)) + 1;
+    newRoot->height = max(height(newRoot->left), height(newRoot->right)) + 1;
 
-    } 
-    else if(first->x > second->x)
-    {
-        second->next = mergeList(first,second->next);
-        return second;
-    }
-    else
-    {
-        if(first->y < second->y)
-        {
-        first->next = mergeList(first->next,second);
-        return first;
-        }
-        else if(first->y > second->y)
-        {
-        second->next = mergeList(first,second->next);
-        return second;
-        }
-        else
-        {
-            first->copy += second->copy;
-            first->next = mergeList(first, second->next);
-            return first;
-        }
-    }
+    return newRoot;
 }
 
-List* MergeSort(List* head) 
-{
-  
-    // Base case: if the list is empty or has only one node, 
-    // it's already sorted
-    if (head == NULL || head->next == NULL) {
-        return head;
+TNode* insert(TNode* node, Point point) {
+    if (node == NULL)
+        return constructNode(point);
+
+    if (point.x < node->point.x || (point.x == node->point.x && point.y < node->point.y)) {
+        node->left = insert(node->left, point);
+    } else if (point.x > node->point.x || (point.x == node->point.x && point.y > node->point.y)) {
+        node->right = insert(node->right, point);
+    } else {
+        return node; // Point already exists, no insertion
     }
 
-    // Split the list into two halves
-    List* second = splitList(head);
+    node->height = 1 + max(height(node->left), height(node->right));
 
-    // Recursively sort each half
-    head = MergeSort(head);
-    second = MergeSort(second);
+    int balance = getBalance(node);
 
-    // Merge the two sorted halves
-    return mergeList(head, second);
-}
-
-
-Node* listToBst(List* root) {
-    if (root == NULL) {
-        return NULL;
+    // Left Left Case
+    if (balance > 1 && (point.x < node->left->point.x || (point.x == node->left->point.x && point.y < node->left->point.y))) {
+        return rotateRight(node);
+    }
+    // Right Right Case
+    if (balance < -1 && (point.x > node->right->point.x || (point.x == node->right->point.x && point.y > node->right->point.y))) {
+        return rotateLeft(node);
+    }
+    // Left Right Case
+    if (balance > 1 && (point.x > node->left->point.x || (point.x == node->left->point.x && point.y > node->left->point.y))) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+    // Right Left Case
+    if (balance < -1 && (point.x < node->right->point.x || (point.x == node->right->point.x && point.y < node->right->point.y))) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
     }
 
-    if (root->next == NULL) {
+    return node;
+}
 
-        Node* temp = createBstNode(root->x, root->y, root->copy);
-        free(root);
-        return temp;
+int isInCircle(Point p, int h, int k, int r) {
+    int xNew = p.x - h;
+    int yNew = p.y - k;
+    return ((xNew * xNew) + (yNew * yNew)) <= r * r;
+}
+
+void search(TNode* node, int h, int k, int r, int* count) {
+    if (node == NULL)
+        return;
+
+    if (isInCircle(node->point, h, k, r)) {
+        (*count)++;
     }
 
-    List* mid = splitList(root);
-    
-    Node* bstRoot = createBstNode(mid->x, mid->y, mid->copy);
-    bstRoot->left = listToBst(root);
-    bstRoot->right = listToBst(mid->next);
+    if (h - r <= node->point.x)
+        search(node->left, h, k, r, count);
 
-    free(mid);
-
-    return bstRoot;
+    if (h + r >= node->point.x)
+        search(node->right, h, k, r, count);
 }
 
-Node* createBstNode(int x, int y, int copy)
-{
-    Node* root = malloc(sizeof(Node));
-    root->x = x;
-    root->y = y;
-    root->copy = copy;
-    root->left = NULL;
-    root->right = NULL;
-
-    return(root);
-}
-
-void inOrderTraversal(Node* root) {
-    if (root == NULL) {
+void freeTree(TNode* node) {
+    if (node == NULL) {
         return;
     }
-
-    // Visit left subtree
-    inOrderTraversal(root->left);
-
-    // Visit root
-    printf("Bst x:%d and y:%d \n", root->x, root->y);
-
-    // Visit right subtree
-    inOrderTraversal(root->right);
+    freeTree(node->left);
+    freeTree(node->right);
+    free(node);
 }
 
-int bstSearch(Node* root, int x, int y, int radius)
-{
-
-    if(root == NULL) return 0;
-    int dist = 0; 
- 
-    if(((root->x == x) && (yChecker(root,x, y,radius))) || (((root->x <= radius+x ) && (root->x >= x - radius)) && (yChecker(root,x, y,radius))))
-    {
-        dist += root->copy;
-        dist+= bstSearch(root->left, x, y, radius);
-        dist+= bstSearch(root->right, x, y, radius);
-
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        return 1;
     }
 
-    else if(root->x > radius+x)
-    {
-        dist += bstSearch(root->left, x, y, radius);
-
-    } 
-       
-    else if(root->x < x - radius)
-    {
-        dist += bstSearch(root->right, x, y, radius);
-
+    FILE* file = fopen(argv[1], "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Cannot open file %s\n", argv[1]);
+        return 1;
     }
 
-    else 
-    {
-        dist += bstSearch(root->left, x, y, radius);
-        dist += bstSearch(root->right, x, y, radius);
+    TNode* root = NULL;
+    int x, y;
 
+    while (fscanf(file, "%d %d", &x, &y) != EOF) {
+        Point point = {x, y};
+        root = insert(root, point);
+    }
+    fclose(file);
 
+    int h, k, r;
+    while (scanf("%d %d %d", &h, &k, &r) != EOF) {
+        int count = 0;
+        search(root, h, k, r, &count);
+        printf("%d\n", count);
     }
 
-return dist;
-    
-}
+    freeTree(root);
 
-// int bstSearch(Node* root, int x, int y, int radius)
-// {
-//     if (root == NULL) return 0;
-
-//     int dist = 0;
-
-//     // Calculate the squared distance to avoid sqrt calls
-//     int dx = root->x - x;
-//     int dy = root->y - y;
-//     int distSquared = dx * dx + dy * dy;
-//     int radiusSquared = radius * radius;
-
-//     // Check if the current node is within the circle
-//     if (distSquared <= radiusSquared)
-//     {
-//         dist += root->copy; // Add the count if within the circle
-//     }
-
-//     // If the current node's x-coordinate is within x ± radius, check both sides
-//     if (root->x >= x - radius && root->x <= x + radius)
-//     {
-//         dist += bstSearch(root->left, x, y, radius);
-//         dist += bstSearch(root->right, x, y, radius);
-//     }
-//     else if (root->x < x - radius) // Only search the right subtree
-//     {
-//         dist += bstSearch(root->right, x, y, radius);
-//     }
-//     else if (root->x > x + radius) // Only search the left subtree
-//     {
-//         dist += bstSearch(root->left, x, y, radius);
-//     }
-
-//     return dist;
-// }
-
-
-
-bool yChecker(Node* root, int r_x, int r_y, int radius)
-{
-    int x = root->x;
-    int y = root->y;
-    int distSquared = (x - r_x) * (x - r_x) + (y - r_y) * (y - r_y); // Calculate squared distance
-    int radiusSquared = radius * radius; // Calculate squared radius
-    return (distSquared <= radiusSquared); // Compare squared values
-}
-
-void deallocate(Node* root)
-{
-    if(root == NULL) return;
-
-    deallocate(root->left);
-    deallocate(root->right);
-
-    free(root);
+    return 0;
 }
