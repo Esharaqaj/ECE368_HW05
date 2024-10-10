@@ -1,9 +1,4 @@
-int height(TNode* node);
-int getBalance(TNode* node);
-int max(int a, int b);
-int isInCircle(Point p, int h, int k, int r);
-void search(TNode* node, int h, int k, int r, int* count);
-void freeTree(TNode* node);
+#include "hw05.h"
 
 // Helper function to construct a new node
 TNode *constructNode(Point point){
