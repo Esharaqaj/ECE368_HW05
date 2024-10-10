@@ -122,7 +122,7 @@ List* mergeList(List* first, List* second)
         else
         {
             first->copy += second->copy;
-            first->next = mergeList(first, second->next);
+            first->next = mergeList(first->next, second->next);
             return first;
         }
     }
