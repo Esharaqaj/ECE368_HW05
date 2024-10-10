@@ -2,21 +2,21 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-typedef struct point {
+typedef struct values {
     int x, y;
-} Point;
+} Values;
 
-typedef struct tNode {
-    Point point;
-    struct tNode *left;
-    struct tNode *right;
+typedef struct Node {
+    Values Values;
+    struct Node *left;
+    struct Node *right;
     int height;
-} TNode;
+} Node;
 
 // Function prototypes
-int height(TNode* node);
-int getBalance(TNode* node);
+int height(Node* node);
+int getBalance(Node* node);
 int max(int a, int b);
-int isInCircle(Point p, int h, int k, int r);
-void search(TNode* node, int h, int k, int r, int* count);
-void freeTree(TNode* node);
+int radiusChecker(Values p, int h, int k, int r);
+void search(Node* node, int h, int k, int r, int* count);
+void freeTree(Node* node);
