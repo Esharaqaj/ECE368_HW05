@@ -117,40 +117,40 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-Node* insert(Node* node, Values Values) {
+Node* insert(Node* node, Values point) {
     if (node == NULL)
-        return createNode(Values);
+        return constructNode(point);
 
-    if (Values.x < node->Values.x || (Values.x == node->Values.x && Values.y < node->Values.y)) {
-        node->left = insert(node->left, Values);
-    } else if (Values.x > node->Values.x || (Values.x == node->Values.x && Values.y > node->Values.y)) {
-        node->right = insert(node->right, Values);
+    if (point.x < node->point.x || (point.x == node->point.x && point.y < node->point.y)) {
+        node->left = insert(node->left, point);
+    } else if (point.x > node->point.x || (point.x == node->point.x && point.y > node->point.y)) {
+        node->right = insert(node->right, point);
     } else {
-        return node;
+        return node; // Point already exists, no insertion
     }
 
     node->height = 1 + max(height(node->left), height(node->right));
 
     int balance = getBalance(node);
 
-    if (balance > 1 && (Values.x < node->left->Values.x || (Values.x == node->left->Values.x && Values.y < node->left->Values.y))) {
+    // Left Left Case
+    if (balance > 1 && (point.x < node->left->point.x || (point.x == node->left->point.x && point.y < node->left->point.y))) {
         return rotateRight(node);
     }
-
-    if (balance < -1 && (Values.x > node->right->Values.x || (Values.x == node->right->Values.x && Values.y > node->right->Values.y))) {
+    // Right Right Case
+    if (balance < -1 && (point.x > node->right->point.x || (point.x == node->right->point.x && point.y > node->right->point.y))) {
         return rotateLeft(node);
     }
-
-    if (balance < -1 && (Values.x < node->right->Values.x || (Values.x == node->right->Values.x && Values.y < node->right->Values.y))) {
-        node->right = rotateRight(node->right);
-        return rotateLeft(node);
-    }
-
-    if (balance > 1 && (Values.x > node->left->Values.x || (Values.x == node->left->Values.x && Values.y > node->left->Values.y))) {
+    // Left Right Case
+    if (balance > 1 && (point.x > node->left->point.x || (point.x == node->left->point.x && point.y > node->left->point.y))) {
         node->left = rotateLeft(node->left);
         return rotateRight(node);
     }
-
+    // Right Left Case
+    if (balance < -1 && (point.x < node->right->point.x || (point.x == node->right->point.x && point.y < node->right->point.y))) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
 
     return node;
 }
