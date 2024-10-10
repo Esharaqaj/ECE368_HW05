@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
         printf("%d\n", dist);
     }
 
+    deallocate(bst_root);
     fclose(file);
     return EXIT_SUCCESS;
 }
@@ -159,7 +160,10 @@ Node* listToBst(List* root) {
     }
 
     if (root->next == NULL) {
-        return createBstNode(root->x, root->y, root->copy);
+
+        Node* temp = createBstNode(root->x, root->y, root->copy);
+        free(root);
+        return temp;
     }
 
     List* mid = splitList(root);
@@ -205,7 +209,7 @@ int bstSearch(Node* root, int x, int y, int radius)
 
     if(root == NULL) return 0;
     int dist = 0; 
-
+ 
     if(((root->x == x) && (yChecker(root,x, y,radius))) || (((root->x <= radius+x ) && (root->x >= x - radius)) && (yChecker(root,x, y,radius))))
     {
         dist += root->copy;
@@ -246,4 +250,14 @@ bool yChecker(Node* root, int r_x, int r_y, int radius)
     int distSquared = (x - r_x) * (x - r_x) + (y - r_y) * (y - r_y); // Calculate squared distance
     int radiusSquared = radius * radius; // Calculate squared radius
     return (distSquared <= radiusSquared); // Compare squared values
+}
+
+void deallocate(Node* root)
+{
+    if(root == NULL) return;
+
+    deallocate(root->left);
+    deallocate(root->right);
+
+    free(root);
 }
